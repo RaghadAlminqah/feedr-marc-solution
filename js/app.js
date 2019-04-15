@@ -1,4 +1,7 @@
 var diggFeed = [], diggNodes = []
+var $loader = $('.loader');
+var $popUp = $('#popUp');
+var $main = $('#main');
 
 function getDiggArticles() {
   $.get('https://accesscontrolalloworiginall.herokuapp.com/http://digg.com/api/news/popular.json')
@@ -9,14 +12,13 @@ function getDiggArticles() {
         title: article.content.title,
         url: article.content.url,
         image: article.content.media.images[0].original_url,
-        source: 'digg',
-        story_id: article.story_id
+        source: article.content.domain_name,
+        description: article.content.description
       })
     })
   })
   .done(() => {
     // console.log(diggFeed)
-    $main = $('#main');
     $main.empty()
 
     diggFeed.forEach((article, index) => {
@@ -36,74 +38,37 @@ function getDiggArticles() {
           <div class="clearfix"></div>
         </article>
       `)
-      // $articleNode.on('click', (e) => {
-      //   e.preventDefault()
-      //   console.log(e.target)
-      // })
-      // diggNodes.push($articleNode)
     })
+
+    $loader.addClass('hidden');
   })
   .done(() => {
     $('.article a').on('click', (e) => {
-      e.preventDefault()
-      console.log(e.target.id)
       let chosenArticle = diggFeed[e.target.id]
-      console.log(chosenArticle)
-
       
-      $('#popUp')
+      $popUp
+        .empty()
         .attr('class', '')
-      
-      $('#popUp .container').html(`
-        <div class="container">
-          <h1>${chosenArticle.title}</h1>
-          <p>
-          ${chosenArticle.title}
-          </p>
-          <a href=${chosenArticle.url} class="popUpAction" target="_blank">Read more from source</a>
-        </div>
-      `)
+        .html(`
+          <a href="#" class="closePopUp">X</a>
+          <div class="container">
+            <h1>${chosenArticle.title}</h1>
+            <p>
+            ${chosenArticle.description}
+            </p>
+            <a href=${chosenArticle.url} class="popUpAction" target="_blank">Read more from source</a>
+          </div>
+        `)
 
-      $('.closePopUp').on('click', (e) => {
-        e.preventDefault()
-        $('#popUp').addClass('hidden')
+      $('.closePopUp').on('click', () => {
+        $popUp.addClass('hidden')
       })
-
-
     })
   })
-  .done(() => {
-    // $('#main')
-    // .empty()
-    // .append(diggNodes)
-
-    $('.loader').addClass('hidden');
-  })
-}
-  
-// function addDiggArticlesToDOM(diggArticles) {  
-//   diggArticles.forEach(article => {
-//     let node = `
-//       <article class="article">
-//         <section class="featuredImage">
-//           <img src=${article.image} alt="">
-//         </section>
-//         <section class="articleContent">
-//             <a href="#"><h3>${article.title}</h3></a>
-//             <h6>${article.topic}</h6>
-//         </section>
-//         <section class="impressions">
-//           526
-//         </section>
-//         <div class="clearfix"></div>
-//       </article>
-//     `
-//   })
-// }
-      
+}      
 
 $(() => {
-  $('.loader').removeClass('hidden');
+  $loader.removeClass('hidden');
   getDiggArticles()
 })
 // $.ajax({
