@@ -1,4 +1,5 @@
-var diggFeed = [], diggNodes = []
+var diggFeed = [], diggNodes = [];
+var redditArticles= [], redditNodes = [];
 var $loader = $('.loader');
 var $popUp = $('#popUp');
 var $main = $('#main');
@@ -65,19 +66,35 @@ function getDiggArticles() {
       })
     })
   })
-}      
+}     
+
+function getRedditArticles() {
+  $.get('https://www.reddit.com/top.json')
+    .done(response => {
+      // redditArticles = response.data.children
+      // console.log(redditArticles)
+      response.data.children.forEach(article =>  {
+        console.log(article)
+        redditArticles.push({
+          title: article.data.title,
+          url: article.data.url,
+          image: article.data.thumbnail,
+          source: article.data.subreddit,
+          description: article.data.subreddit
+        })
+      })
+    })
+    .done(() => {
+      console.log(redditArticles)
+    })
+}
+
 
 $(() => {
   $loader.removeClass('hidden');
   getDiggArticles()
+  getRedditArticles()
 })
-// $.ajax({
-//   url: 'https://www.reddit.com/top.json',
-//   success: function(response) {
-//     redditArticles = response.data.children
-//     console.log(redditArticles)
-//   }
-// })
 
 // $.ajax({
 //   url: 'https://accesscontrolalloworiginall.herokuapp.com/https://mashable.com/stories.json',
