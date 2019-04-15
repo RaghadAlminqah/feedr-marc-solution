@@ -21,25 +21,7 @@ function getDiggArticles() {
   .done(() => {
     // console.log(diggFeed)
     $main.empty()
-
-    diggFeed.forEach((article, index) => {
-      // console.log(article)
-      $main.append(`
-        <article class="article" >
-          <section class="featuredImage">
-            <img src=${article.image} alt="">
-          </section>
-          <section class="articleContent">
-            <a href='#'><h3 id=${index}>${article.title}</h3></a>
-            <h6>${article.source}</h6>
-          </section>
-          <section class="impressions">
-            ${article.source}
-          </section>
-          <div class="clearfix"></div>
-        </article>
-      `)
-    })
+    appendDom(diggFeed)
 
     $loader.addClass('hidden');
   })
@@ -68,13 +50,70 @@ function getDiggArticles() {
   })
 }     
 
+function appendDom(array) {
+  console.log(array)
+  array.forEach((article, index) => {
+    // console.log(article)
+    $main.append(`
+      <article class="article" >
+        <section class="featuredImage">
+          <img src=${article.image} alt="">
+        </section>
+        <section class="articleContent">
+          <a href='#'><h3 id=${index}>${article.title}</h3></a>
+          <h6>${article.source}</h6>
+        </section>
+        <section class="impressions">
+          ${article.source}
+        </section>
+        <div class="clearfix"></div>
+      </article>
+    `)
+  })
+
+  $('.article a').on('click', (e) => {
+    let chosenArticle = array[e.target.id]
+    
+    $popUp
+      .empty()
+      .attr('class', '')
+      .html(`
+        <a href="#" class="closePopUp">X</a>
+        <div class="container">
+          <h1>${chosenArticle.title}</h1>
+          <p>
+          ${chosenArticle.description}
+          </p>
+          <a href=${chosenArticle.url} class="popUpAction" target="_blank">Read more from source</a>
+        </div>
+      `)
+
+    $('.closePopUp').on('click', () => {
+      $popUp.addClass('hidden')
+    })
+  })
+
+}
+
+function setDropDown() {
+  $dropdowns = $('#dropdown a')
+
+  $dropdowns.on('click', (e) => {
+    // console.log(e.target.id)
+    if (e.target.id === "reddit") { 
+      // $main.empty()
+      redditAppendDom() 
+    }
+  })
+}
+
 function getRedditArticles() {
   $.get('https://www.reddit.com/top.json')
     .done(response => {
       // redditArticles = response.data.children
       // console.log(redditArticles)
       response.data.children.forEach(article =>  {
-        console.log(article)
+        // console.log(article)
         redditArticles.push({
           title: article.data.title,
           url: article.data.url,
@@ -89,11 +128,22 @@ function getRedditArticles() {
     })
 }
 
+function redditAppendDom() {
+  console.log("Reddit append DOM")
+  $main.empty()
+  $loader.removeClass('hidden');
+  appendDom(redditArticles)
+  $loader.addClass('hidden');
+
+  
+}
+
 
 $(() => {
   $loader.removeClass('hidden');
   getDiggArticles()
   getRedditArticles()
+  setDropDown()
 })
 
 // $.ajax({
