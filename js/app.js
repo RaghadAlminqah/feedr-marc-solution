@@ -3,7 +3,7 @@ var redditArticles= [], redditNodes = [];
 var mashableArticles =[], mashableNodes = [];
 var $loader = $('.loader');
 var $popUp = $('#popUp');
-var $main = $('#main');      
+var $main = $('#main');
 
 function appendDom(array) {
   array.forEach((article, index) => {
@@ -52,19 +52,21 @@ function setDropDown() {
   $dropdowns = $('#dropdown a')
 
   $dropdowns.on('click', (e) => {
-    // console.log(e.target.id)
-    if (e.target.id === "reddit") { 
+    let userChoice = e.target.id;
+    if (userChoice === "reddit") { 
       // $main.empty()
       redditAppendDom() 
-    } else if (e.target.id === "digg") {
+    } else if (userChoice === "digg") {
       diggAppendDom()
-    } else {
+    } else if (userChoice === "mashable") {
       mashableAppendDom()
+    } else {
+      alert("something is broken")
     }
   })
 }
 
-function getDiggArticles() {
+function getAllArticles() {
   $.get('https://accesscontrolalloworiginall.herokuapp.com/http://digg.com/api/news/popular.json')
     .done(response => {
       response.data.feed.forEach(article =>  {
@@ -76,47 +78,41 @@ function getDiggArticles() {
           description: article.content.description
         })
       })
+      diggAppendDom()
     })
     .done(() => {
-      console.log(diggArticles)
+      $.get('https://www.reddit.com/top.json')
+        .done(response => {
+          response.data.children.forEach(article =>  {
+            redditArticles.push({
+              title: article.data.title,
+              url: article.data.url,
+              image: article.data.thumbnail,
+              source: article.data.subreddit,
+              description: article.data.subreddit
+            })
+          })
+        })
+    })
+    .done(() => {
+      $.get('https://accesscontrolalloworiginall.herokuapp.com/https://mashable.com/stories.json')
+        .done(response => {
+          response.hot.forEach(article =>  {
+            mashableArticles.push({
+              title: article.display_title,
+              url: article.link,
+              image: article.image,
+              source: article.channel,
+              description: article.excerpt
+            })
+          })
+        })
+      })
+    .done(() => {
+      console.log("Articles loaded");
+      $popUp.addClass('hidden')
     })
 }  
-
-function getRedditArticles() {
-  $.get('https://www.reddit.com/top.json')
-    .done(response => {
-      response.data.children.forEach(article =>  {
-        redditArticles.push({
-          title: article.data.title,
-          url: article.data.url,
-          image: article.data.thumbnail,
-          source: article.data.subreddit,
-          description: article.data.subreddit
-        })
-      })
-    })
-    .done(() => {
-      console.log(redditArticles)
-    })
-}
-
-function getMashableArticles() {
-  $.get('https://accesscontrolalloworiginall.herokuapp.com/https://mashable.com/stories.json')
-    .done(response => {
-      response.hot.forEach(article =>  {
-        mashableArticles.push({
-          title: article.display_title,
-          url: article.link,
-          image: article.image,
-          source: article.channel,
-          description: article.excerpt
-        })
-      })
-    })
-    .done(() => {
-      console.log(mashableArticles)
-    })
-}
 
 function diggAppendDom() {
   console.log("Digg append DOM")
@@ -142,24 +138,8 @@ function mashableAppendDom() {
   $popUp.addClass('hidden');  
 }
 
-function start() {
+$(() => {
   $popUp.removeClass('hidden')
   setDropDown()
-  getDiggArticles()
-  getRedditArticles()
-  getMashableArticles()
-  // diggAppendDom()
-  // $popUp.addClass('hidden')
-}
-
-
-$(() => {
-  start()
-  setTimeout(() => {
-    diggAppendDom()
-    $popUp.addClass('hidden')
-  }, 1000)
-
-  // appendDom(diggArticles)
-  // $popUp.addClass('hidden')
+  getAllArticles()
 })
