@@ -1,6 +1,7 @@
 var diggArticles = [];
-var redditArticles= [];
+var redditArticles = [];
 var mashableArticles =[];
+var allArticlesArray = [];
 var $popUp = $('#popUp');
 var $main = $('#main');
 
@@ -48,20 +49,27 @@ function appendDom(array) {
 }
 
 function setDropDown() {
-  $dropdowns = $('#dropdown a')
+  var $dropdowns = $('#dropdown a')
 
   $dropdowns.on('click', (e) => {
     $main.empty()
     let userChoice = e.target.id;
-    
-    if (userChoice === "reddit") { 
-      appendDom(redditArticles)
-    } else if (userChoice === "digg") {
-      appendDom(diggArticles)
-    } else if (userChoice === "mashable") {
-      appendDom(mashableArticles)
-    } else {
-      alert("something is broken")
+
+    switch(userChoice) {
+      case "reddit":
+        appendDom(redditArticles)
+        break;
+      case "digg":
+        appendDom(diggArticles)
+        break;
+      case "mashable":
+        appendDom(mashableArticles)
+        break;
+      case "all":
+        appendDom(allArticlesArray)
+        break;
+      default:
+        alert("something is broken")
     }
   })
 }
@@ -71,13 +79,15 @@ async function getAllArticles() {
   let redditResponse = await $.get('https://www.reddit.com/top.json')
   let mashableResponse = await $.get('https://accesscontrolalloworiginall.herokuapp.com/https://mashable.com/stories.json')
 
-  await buildArticles(diggResponse, redditResponse, mashableResponse)
+  await parseArticles(diggResponse, redditResponse, mashableResponse)
+  await appendDom(diggArticles)
+  $popUp.addClass('hidden');
+  allArticlesArray = shuffle([...diggArticles, ...redditArticles, ...mashableArticles])
   console.log("Articles loaded");
-  $popUp.addClass('hidden')
-  return appendDom(diggArticles)
+  console.log(allArticlesArray)
 }  
 
-function buildArticles(diggResponse, redditResponse, mashableResponse) {
+function parseArticles(diggResponse, redditResponse, mashableResponse) {
   diggResponse.data.feed.forEach(article =>  {
     diggArticles.push({
       title: article.content.title,
@@ -106,12 +116,31 @@ function buildArticles(diggResponse, redditResponse, mashableResponse) {
       source: article.channel,
       description: article.excerpt
     })
-  })
-}  
+  })  
+} 
+
+function shuffle(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
 
 $(() => {
-  getAllArticles()
   $popUp.removeClass('hidden')
+  getAllArticles()
   $main.empty()
   setDropDown()
 })
