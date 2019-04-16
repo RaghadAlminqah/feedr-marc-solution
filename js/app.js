@@ -1,7 +1,6 @@
-var diggArticles = [], diggNodes = [];
-var redditArticles= [], redditNodes = [];
-var mashableArticles =[], mashableNodes = [];
-var $loader = $('.loader');
+var diggArticles = [];
+var redditArticles= [];
+var mashableArticles =[];
 var $popUp = $('#popUp');
 var $main = $('#main');
 
@@ -52,14 +51,15 @@ function setDropDown() {
   $dropdowns = $('#dropdown a')
 
   $dropdowns.on('click', (e) => {
+    $main.empty()
     let userChoice = e.target.id;
+    
     if (userChoice === "reddit") { 
-      // $main.empty()
-      redditAppendDom() 
+      appendDom(redditArticles)
     } else if (userChoice === "digg") {
-      diggAppendDom()
+      appendDom(diggArticles)
     } else if (userChoice === "mashable") {
-      mashableAppendDom()
+      appendDom(mashableArticles)
     } else {
       alert("something is broken")
     }
@@ -71,12 +71,11 @@ async function getAllArticles() {
   let redditResponse = await $.get('https://www.reddit.com/top.json')
   let mashableResponse = await $.get('https://accesscontrolalloworiginall.herokuapp.com/https://mashable.com/stories.json')
 
-  await buildNodes(diggResponse, redditResponse, mashableResponse)
+  await buildArticles(diggResponse, redditResponse, mashableResponse)
   console.log("Articles loaded");
   $popUp.addClass('hidden')
-  return diggAppendDom()
-}
-  
+  return appendDom(diggArticles)
+}  
 
 function buildArticles(diggResponse, redditResponse, mashableResponse) {
   diggResponse.data.feed.forEach(article =>  {
@@ -110,32 +109,9 @@ function buildArticles(diggResponse, redditResponse, mashableResponse) {
   })
 }  
 
-function diggAppendDom() {
-  console.log("Digg append DOM")
-  $main.empty()
-  // $popUp.removeClass('hidden');
-  appendDom(diggArticles)
-  $popUp.addClass('hidden');  
-}
-
-function redditAppendDom() {
-  console.log("Reddit append DOM")
-  $main.empty()
-  $popUp.removeClass('hidden');
-  appendDom(redditArticles)
-  $popUp.addClass('hidden');  
-}
-
-function mashableAppendDom() {
-  console.log("Mashable append DOM")
-  $main.empty()
-  $popUp.removeClass('hidden');
-  appendDom(mashableArticles)
-  $popUp.addClass('hidden');  
-}
-
 $(() => {
-  $popUp.removeClass('hidden')
-  setDropDown()
   getAllArticles()
+  $popUp.removeClass('hidden')
+  $main.empty()
+  setDropDown()
 })
