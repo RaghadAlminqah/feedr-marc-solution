@@ -107,7 +107,7 @@ function setDropDown() {
     } else if (e.target.id === "digg") {
       getDiggArticles()
     } else {
-      alert("Mashable not working yet")
+      mashableAppendDom()
     }
   })
 }
@@ -115,10 +115,7 @@ function setDropDown() {
 function getRedditArticles() {
   $.get('https://www.reddit.com/top.json')
     .done(response => {
-      // redditArticles = response.data.children
-      // console.log(redditArticles)
       response.data.children.forEach(article =>  {
-        // console.log(article)
         redditArticles.push({
           title: article.data.title,
           url: article.data.url,
@@ -141,24 +138,29 @@ function redditAppendDom() {
   $loader.addClass('hidden');  
 }
 
+function mashableAppendDom() {
+  console.log("Mashable append DOM")
+  $main.empty()
+  $loader.removeClass('hidden');
+  appendDom(mashableArticles)
+  $loader.addClass('hidden');  
+}
+
 function getMashableArticles() {
-  $.get('https://www.reddit.com/top.json')
+  $.get('https://accesscontrolalloworiginall.herokuapp.com/https://mashable.com/stories.json')
     .done(response => {
-      // redditArticles = response.data.children
-      // console.log(redditArticles)
-      response.data.children.forEach(article =>  {
-        // console.log(article)
-        redditArticles.push({
-          title: article.data.title,
-          url: article.data.url,
-          image: article.data.thumbnail,
-          source: article.data.subreddit,
-          description: article.data.subreddit
+      response.hot.forEach(article =>  {
+        mashableArticles.push({
+          title: article.display_title,
+          url: article.link,
+          image: article.image,
+          source: article.channel,
+          description: article.excerpt
         })
       })
     })
     .done(() => {
-      console.log(redditArticles)
+      console.log(mashableArticles)
     })
 }
 
